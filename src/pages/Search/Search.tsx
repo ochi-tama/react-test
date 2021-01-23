@@ -53,11 +53,15 @@ export default function MiniDrawer(): JSX.Element {
         </Toolbar>
       </FixedAppBar>
       <SideDrawer open={open} variant="permanent">
-        <div>
+        <CloseMenuIcon>
           <IconButton onClick={handleDrawerClose}>
-            <ChevronRightIcon />
+            {theme.direction === 'rtl' ? (
+              <ChevronRightIcon />
+            ) : (
+              <ChevronLeftIcon />
+            )}
           </IconButton>
-        </div>
+        </CloseMenuIcon>
         <Divider />
         <List>
           {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
@@ -123,9 +127,12 @@ const SpacerDiv = styled.div`
   offset: ${(props) => props.theme.mixins.toolbar};
 `
 
-const SideDrawer = styled(Drawer)`
+const SideDrawer = styled(({ open, ...rest }) => (
+  // classes paper を上書きする
+  <Drawer variant="permanent" {...rest} classes={{ paper: 'drawer-paper' }} />
+))`
   flex-shrink: 0;
-  white-space: 'nowrap';
+  white-space: nowrap;
   width: ${(props) =>
     props.open ? drawerWidth : props.theme.spacing(7) + 1}px;
   transition: ${(props) =>
@@ -143,26 +150,7 @@ const SideDrawer = styled(Drawer)`
     width: theme.spacing(9) + 1;
   }
 
-  .MuiDrawer-root {
-    width: ${(props) =>
-      props.open ? drawerWidth : props.theme.spacing(7) + 1}px;
-    transition: ${(props) =>
-      props.open
-        ? props.theme.transitions.create('width', {
-            easing: props.theme.transitions.easing.sharp,
-            duration: props.theme.transitions.duration.enteringScreen
-          })
-        : props.theme.transitions.create('width', {
-            easing: props.theme.transitions.easing.sharp,
-            duration: props.theme.transitions.duration.leavingScreen
-          })};
-    overflow-x: ${(props) => !props.open && 'hidden'};
-    ${(props) => props.theme.breakpoints.up('sm')} {
-      width: theme.spacing(9) + 1;
-    }
-  }
-
-  .MuiDrawer-paper {
+  & .drawer-paper {
     width: ${(props) =>
       props.open ? drawerWidth : props.theme.spacing(7) + 1}px;
     transition: ${(props) =>
@@ -210,4 +198,12 @@ const StyledIconButton = styled(({ open: boolean, ...rest }) => (
 ))`
   margin-right: 36px;
   display: ${(props) => (props.open ? 'none' : 'flex')};
+`
+
+const CloseMenuIcon = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: ${(props) => props.theme.spacing(0, 1)};
+  offset: ${(props) => props.theme.mixins.toolbar};
 `
