@@ -1,18 +1,10 @@
 /* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from 'react'
-import clsx from 'clsx'
-import {
-  createStyles,
-  makeStyles,
-  useTheme,
-  Theme
-} from '@material-ui/core/styles'
+import { useTheme } from '@material-ui/core/styles'
 import Drawer from '@material-ui/core/Drawer'
 import AppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
 import List from '@material-ui/core/List'
-import CssBaseline from '@material-ui/core/CssBaseline'
 import Typography from '@material-ui/core/Typography'
 import Divider from '@material-ui/core/Divider'
 import IconButton from '@material-ui/core/IconButton'
@@ -22,8 +14,11 @@ import ChevronRightIcon from '@material-ui/icons/ChevronRight'
 import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ListItemText from '@material-ui/core/ListItemText'
-import InboxIcon from '@material-ui/icons/MoveToInbox'
-import MailIcon from '@material-ui/icons/Mail'
+import SearchIcon from '@material-ui/icons/Search'
+import HistoryIcon from '@material-ui/icons/History'
+import BookmarksIcon from '@material-ui/icons/Bookmarks'
+import CommentIcon from '@material-ui/icons/Comment'
+import SettingsIcon from '@material-ui/icons/Settings'
 import styled from 'styled-components'
 
 export default function MiniDrawer(): JSX.Element {
@@ -64,25 +59,39 @@ export default function MiniDrawer(): JSX.Element {
         </CloseMenuIcon>
         <Divider />
         <List>
-          {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-            <ListItem button key={text}>
-              <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItem>
-          ))}
+          <ListItem button>
+            <ListItemIcon>
+              <SearchIcon />
+            </ListItemIcon>
+            <ListItemText primary={'検索'} />
+          </ListItem>
+          <ListItem button>
+            <ListItemIcon>
+              <BookmarksIcon />
+            </ListItemIcon>
+            <ListItemText primary={'ブックマーク'} />
+          </ListItem>
+          <ListItem button>
+            <ListItemIcon>
+              <HistoryIcon />
+            </ListItemIcon>
+            <ListItemText primary={'履歴'} />
+          </ListItem>
+          <ListItem button>
+            <ListItemIcon>
+              <CommentIcon />
+            </ListItemIcon>
+            <ListItemText primary={'コメント'} />
+          </ListItem>
         </List>
         <Divider />
         <List>
-          {['All mail', 'Trash', 'Spam'].map((text, index) => (
-            <ListItem button key={text}>
-              <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItem>
-          ))}
+          <ListItem button>
+            <ListItemIcon>
+              <SettingsIcon />
+            </ListItemIcon>
+            <ListItemText primary={'設定'} />
+          </ListItem>
         </List>
       </SideDrawer>
       <MainContent>
@@ -127,7 +136,7 @@ const SpacerDiv = styled.div`
   offset: ${(props) => props.theme.mixins.toolbar};
 `
 
-const SideDrawer = styled(({ open, ...rest }) => (
+const SideDrawer = styled(({ ...rest }) => (
   // classes paper を上書きする
   <Drawer variant="permanent" {...rest} classes={{ paper: 'drawer-paper' }} />
 ))`
@@ -193,7 +202,7 @@ const FixedAppBar = styled(AppBar)<{ open?: boolean }>`
   `}
 `
 
-const StyledIconButton = styled(({ open: boolean, ...rest }) => (
+const StyledIconButton = styled(({ ...rest }) => (
   <IconButton color="inherit" aria-label="open drawer" edge="start" {...rest} />
 ))`
   margin-right: 36px;
