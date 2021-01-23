@@ -4,19 +4,23 @@ import './index.css'
 import App from './App'
 import reportWebVitals from './reportWebVitals'
 import { BrowserRouter } from 'react-router-dom'
-import { ThemeProvider as MaterialThemeProvider } from '@material-ui/core'
+import {
+  CssBaseline,
+  ThemeProvider as MaterialThemeProvider
+} from '@material-ui/core'
 import { ThemeProvider as StyledThemeProvider } from 'styled-components'
 import theme from './assets/theme'
 
 ReactDOM.render(
   <React.StrictMode>
-    <BrowserRouter>
-      <MaterialThemeProvider theme={theme}>
-        <StyledThemeProvider theme={theme}>
+    <MaterialThemeProvider theme={theme}>
+      <StyledThemeProvider theme={theme}>
+        <BrowserRouter>
+          <CssBaseline />
           <App />
-        </StyledThemeProvider>
-      </MaterialThemeProvider>
-    </BrowserRouter>
+        </BrowserRouter>
+      </StyledThemeProvider>
+    </MaterialThemeProvider>
   </React.StrictMode>,
   document.getElementById('root')
 )
