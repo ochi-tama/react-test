@@ -2,13 +2,10 @@
 import React from 'react'
 import { useTheme } from '@material-ui/core/styles'
 import Drawer from '@material-ui/core/Drawer'
-import AppBar from '@material-ui/core/AppBar'
-import Toolbar from '@material-ui/core/Toolbar'
 import List from '@material-ui/core/List'
 import Typography from '@material-ui/core/Typography'
 import Divider from '@material-ui/core/Divider'
 import IconButton from '@material-ui/core/IconButton'
-import MenuIcon from '@material-ui/icons/Menu'
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft'
 import ChevronRightIcon from '@material-ui/icons/ChevronRight'
 import ListItem from '@material-ui/core/ListItem'
@@ -20,6 +17,7 @@ import BookmarksIcon from '@material-ui/icons/Bookmarks'
 import CommentIcon from '@material-ui/icons/Comment'
 import SettingsIcon from '@material-ui/icons/Settings'
 import styled from 'styled-components'
+import AppBar from '../../components/Layout/AppBar'
 
 export default function MiniDrawer(): JSX.Element {
   const theme = useTheme()
@@ -37,16 +35,7 @@ export default function MiniDrawer(): JSX.Element {
 
   return (
     <>
-      <FixedAppBar position="fixed" open={open}>
-        <Toolbar>
-          <StyledIconButton open={open} onClick={handleDrawerOpen}>
-            <MenuIcon />
-          </StyledIconButton>
-          <Typography variant="h5" noWrap>
-            test app
-          </Typography>
-        </Toolbar>
-      </FixedAppBar>
+      <AppBar open={open} handleOpen={handleDrawerOpen} />
       <SideDrawer open={open} variant="permanent">
         <CloseMenuIcon>
           <IconButton onClick={handleDrawerClose}>
@@ -182,31 +171,6 @@ const SideDrawer = styled(({ ...rest }) => (
 const MainContent = styled.main`
   flex-grow: 1;
   padding: ${(props) => props.theme.spacing(3)}px;
-`
-
-const FixedAppBar = styled(AppBar)<{ open?: boolean }>`
-  z-index: ${(props) => props.theme.zIndex.drawer + 1};
-  transition: ${(props) =>
-    props.theme.transitions.create(['width', 'margin'], {
-      easing: props.theme.transitions.easing.sharp,
-      duration: props.theme.transitions.duration.leavingScreen
-    })};
-  ${(props) =>
-    props.open &&
-    `
-      width: calc(100% - ${drawerWidth}px);
-      transition: theme.transitions.create(['width', 'margin'], {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.enteringScreen,
-      }),
-  `}
-`
-
-const StyledIconButton = styled(({ ...rest }) => (
-  <IconButton color="inherit" aria-label="open drawer" edge="start" {...rest} />
-))`
-  margin-right: 36px;
-  display: ${(props) => (props.open ? 'none' : 'flex')};
 `
 
 const CloseMenuIcon = styled.div`
