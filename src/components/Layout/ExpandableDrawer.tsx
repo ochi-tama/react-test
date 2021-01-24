@@ -31,6 +31,7 @@ export default function ExpandbleDrawer({
   const theme = useTheme()
   return (
     <SideDrawer open={open} variant="permanent">
+      {/* TODO: アイコンの色も変更させる */}
       <CloseMenuIcon>
         <IconButton onClick={handleClose}>
           {theme.direction === 'rtl' ? (
@@ -99,7 +100,6 @@ const SideDrawer = styled(({ ...rest }) => (
   // classes paper を上書きする
   <Drawer variant="permanent" {...rest} classes={{ paper: 'drawer-paper' }} />
 ))`
-  flex-shrink: 0;
   white-space: nowrap;
   width: ${(props) =>
     props.open ? DRAWER_WIDTH : props.theme.spacing(7) + 1}px;
