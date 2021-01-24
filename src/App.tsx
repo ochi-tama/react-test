@@ -4,18 +4,17 @@ import styled from 'styled-components'
 import Layout from './components/Layout/Layout'
 import Login from './pages/Login/Login'
 import Search from './pages/Search/Search'
+import Top from './pages/Top/Top'
 
 function App(): JSX.Element {
   return (
     <RootDiv>
       <Layout>
-        <>
-          <header className="App-header"></header>
-          <Switch>
-            <Route exact path="/" component={Search} />
-            <Route exact path="/login" component={Login} />
-          </Switch>
-        </>
+        <Switch>
+          <Route exact path="/search" component={Search} />
+          <Route exact path="/login" component={Login} />
+          <Route component={Top} />
+        </Switch>
       </Layout>
     </RootDiv>
   )
