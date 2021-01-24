@@ -1,15 +1,26 @@
+import {
+  CssBaseline,
+  ThemeProvider as MaterialThemeProvider
+} from '@material-ui/core'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import './index.css'
-import App from './App'
-import reportWebVitals from './reportWebVitals'
 import { BrowserRouter } from 'react-router-dom'
+import { ThemeProvider as StyledThemeProvider } from 'styled-components'
+import App from './App'
+import theme from './assets/theme'
+import './index.css'
+import reportWebVitals from './reportWebVitals'
 
 ReactDOM.render(
   <React.StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <MaterialThemeProvider theme={theme}>
+      <StyledThemeProvider theme={theme}>
+        <BrowserRouter>
+          <CssBaseline />
+          <App />
+        </BrowserRouter>
+      </StyledThemeProvider>
+    </MaterialThemeProvider>
   </React.StrictMode>,
   document.getElementById('root')
 )
