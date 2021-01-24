@@ -21,7 +21,7 @@ function App(): JSX.Element {
 }
 
 export default App
-
+    
 const RootDiv = styled.div`
   display: flex;
 `
