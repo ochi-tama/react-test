@@ -12,8 +12,10 @@ import ChevronRightIcon from '@material-ui/icons/ChevronRight'
 import CommentIcon from '@material-ui/icons/Comment'
 import HistoryIcon from '@material-ui/icons/History'
 import SearchIcon from '@material-ui/icons/Search'
+import HomeIcon from '@material-ui/icons/Home'
 import SettingsIcon from '@material-ui/icons/Settings'
 import React from 'react'
+import { NavLink } from 'react-router-dom'
 import styled from 'styled-components'
 import { DRAWER_WIDTH } from '../../common/const'
 
@@ -40,30 +42,46 @@ export default function ExpandbleDrawer({
       </CloseMenuIcon>
       <Divider />
       <List>
-        <ListItem button>
-          <ListItemIcon>
-            <SearchIcon />
-          </ListItemIcon>
-          <ListItemText primary={'検索'} />
-        </ListItem>
-        <ListItem button>
-          <ListItemIcon>
-            <BookmarksIcon />
-          </ListItemIcon>
-          <ListItemText primary={'ブックマーク'} />
-        </ListItem>
-        <ListItem button>
-          <ListItemIcon>
-            <HistoryIcon />
-          </ListItemIcon>
-          <ListItemText primary={'履歴'} />
-        </ListItem>
-        <ListItem button>
-          <ListItemIcon>
-            <CommentIcon />
-          </ListItemIcon>
-          <ListItemText primary={'コメント'} />
-        </ListItem>
+        <StyledNavLink exact to="/">
+          <ListItem button>
+            <ListItemIcon>
+              <HomeIcon />
+            </ListItemIcon>
+            <ListItemText primary={'ホーム'} />
+          </ListItem>
+        </StyledNavLink>
+        <StyledNavLink exact to="/search">
+          <ListItem button>
+            <ListItemIcon>
+              <SearchIcon />
+            </ListItemIcon>
+            <ListItemText primary={'検索'} />
+          </ListItem>
+        </StyledNavLink>
+        <StyledNavLink exact to="/bookmarks">
+          <ListItem button>
+            <ListItemIcon>
+              <BookmarksIcon />
+            </ListItemIcon>
+            <ListItemText primary={'ブックマーク'} />
+          </ListItem>
+        </StyledNavLink>
+        <StyledNavLink exact to="/history">
+          <ListItem button>
+            <ListItemIcon>
+              <HistoryIcon />
+            </ListItemIcon>
+            <ListItemText primary={'履歴'} />
+          </ListItem>
+        </StyledNavLink>
+        <StyledNavLink exact to="/comments">
+          <ListItem button>
+            <ListItemIcon>
+              <CommentIcon />
+            </ListItemIcon>
+            <ListItemText primary={'コメント'} />
+          </ListItem>
+        </StyledNavLink>
       </List>
       <Divider />
       <List>
@@ -126,4 +144,14 @@ const CloseMenuIcon = styled.div`
   justify-content: flex-end;
   padding: ${(props) => props.theme.spacing(0, 1)};
   offset: ${(props) => props.theme.mixins.toolbar};
+`
+
+const StyledNavLink = styled(NavLink).attrs({ activeClassName: 'active' })`
+  text-decoration: none;
+  color: black;
+  &.active {
+    background: rgba(0, 0, 0, 0.08);
+    width: 100%;
+    display: inline-block;
+  }
 `
