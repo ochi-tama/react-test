@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { Button } from '@material-ui/core'
 import AppBar from '@material-ui/core/AppBar'
 import Badge from '@material-ui/core/Badge'
 import IconButton from '@material-ui/core/IconButton'
@@ -12,14 +14,24 @@ import NotificationsIcon from '@material-ui/icons/Notifications'
 import React from 'react'
 import styled from 'styled-components'
 import { DRAWER_WIDTH } from '../../common/const'
+import { Link, RouterProps, useHistory } from 'react-router-dom'
+import { auth } from '../../common/firebase/firebaseClient'
+import { AuthContext } from '../../context/AuthContext'
 
 type Props = {
+  authenticated: boolean
   open: boolean
   handleOpen: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
 }
 
-export default function Appbar({ open, handleOpen }: Props): JSX.Element {
+export default function Appbar({
+  authenticated,
+  open,
+  handleOpen
+}: Props): JSX.Element {
+  const history = useHistory()
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
+  const { setCurrentUser } = React.useContext(AuthContext)
   const [
     mobileMoreAnchorEl,
     setMobileMoreAnchorEl
@@ -32,6 +44,13 @@ export default function Appbar({ open, handleOpen }: Props): JSX.Element {
     setAnchorEl(event.currentTarget)
   }
 
+  const handleLogout = async () => {
+    await auth.signOut()
+    if (setCurrentUser) {
+      setCurrentUser(null)
+    }
+    window.location.href = '/'
+  }
   const handleMobileMenuClose = () => {
     setMobileMoreAnchorEl(null)
   }
@@ -58,6 +77,7 @@ export default function Appbar({ open, handleOpen }: Props): JSX.Element {
     >
       <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
       <MenuItem onClick={handleMenuClose}>My account</MenuItem>
+      <MenuItem onClick={handleLogout}>Logout</MenuItem>
     </Menu>
   )
 
@@ -105,38 +125,58 @@ export default function Appbar({ open, handleOpen }: Props): JSX.Element {
             test app
           </Typography>
           <FlexDiv />
-          <SectionDesktop>
-            <IconButton aria-label="show 17 new notifications" color="inherit">
-              <Badge badgeContent={17} color="secondary">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton>
-            <IconButton
-              edge="end"
-              aria-label="account of current user"
-              aria-controls={menuId}
-              aria-haspopup="true"
-              onClick={handleProfileMenuOpen}
-              color="inherit"
+          {authenticated ? (
+            <>
+              <SectionDesktop>
+                <IconButton
+                  aria-label="show 17 new notifications"
+                  color="inherit"
+                >
+                  <Badge badgeContent={17} color="secondary">
+                    <NotificationsIcon />
+                  </Badge>
+                </IconButton>
+                <IconButton
+                  edge="end"
+                  aria-label="account of current user"
+                  aria-controls={menuId}
+                  aria-haspopup="true"
+                  onClick={handleProfileMenuOpen}
+                  color="inherit"
+                >
+                  <AccountCircle />
+                </IconButton>
+              </SectionDesktop>
+              <SectionMobile>
+                <IconButton
+                  aria-label="show more"
+                  aria-controls={mobileMenuId}
+                  aria-haspopup="true"
+                  onClick={handleMobileMenuOpen}
+                  color="inherit"
+                >
+                  <MoreIcon />
+                </IconButton>
+              </SectionMobile>
+            </>
+          ) : (
+            <Button
+              variant="contained"
+              color="primary"
+              component={Link}
+              to="/login"
             >
-              <AccountCircle />
-            </IconButton>
-          </SectionDesktop>
-          <SectionMobile>
-            <IconButton
-              aria-label="show more"
-              aria-controls={mobileMenuId}
-              aria-haspopup="true"
-              onClick={handleMobileMenuOpen}
-              color="inherit"
-            >
-              <MoreIcon />
-            </IconButton>
-          </SectionMobile>
+              Login
+            </Button>
+          )}
         </Toolbar>
       </FixedAppBar>
-      {renderMobileMenu}
-      {renderMenu}
+      {authenticated && (
+        <>
+          {renderMobileMenu}
+          {renderMenu}
+        </>
+      )}
     </>
   )
 }

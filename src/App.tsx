@@ -5,11 +5,13 @@ import Layout from './components/Layout/Layout'
 import Login from './pages/Login/Login'
 import Search from './pages/Search/Search'
 import Top from './pages/Top/Top'
+import { AuthContext } from './context/AuthContext'
 
 function App(): JSX.Element {
+  const { currentUser } = React.useContext(AuthContext)
   return (
     <RootDiv>
-      <Layout>
+      <Layout authenticated={!!currentUser}>
         <Switch>
           <Route exact path="/search" component={Search} />
           <Route exact path="/login" component={Login} />

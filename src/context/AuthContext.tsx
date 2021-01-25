@@ -4,14 +4,14 @@ import firebase, { auth } from '../common/firebase/firebaseClient'
 
 // contextの作成
 type DefaultAuthContext = {
-  currentUser: firebase.User | undefined
-  setCurrentUser:
-    | React.Dispatch<React.SetStateAction<firebase.User | undefined>>
-    | undefined
+  currentUser: firebase.User | undefined | null
+  setCurrentUser?: React.Dispatch<
+    React.SetStateAction<firebase.User | null | undefined>
+  >
 }
+
 export const AuthContext = React.createContext<DefaultAuthContext>({
-  currentUser: undefined,
-  setCurrentUser: undefined
+  currentUser: undefined
 })
 
 type Props = {
@@ -19,7 +19,7 @@ type Props = {
 }
 
 export const AuthProvider = ({ children }: Props): JSX.Element => {
-  const [currentUser, setCurrentUser] = useState<firebase.User>()
+  const [currentUser, setCurrentUser] = useState<firebase.User | null>()
 
   // ユーザーをログインさせる関数
   /*
@@ -46,6 +46,7 @@ export const AuthProvider = ({ children }: Props): JSX.Element => {
   useEffect(() => {
     auth.onAuthStateChanged((user) => {
       if (user) {
+        console.log(user)
         setCurrentUser(user)
       } else {
         console.log('not logged in')
