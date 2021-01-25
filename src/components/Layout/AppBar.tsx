@@ -12,9 +12,9 @@ import MenuIcon from '@material-ui/icons/Menu'
 import MoreIcon from '@material-ui/icons/MoreVert'
 import NotificationsIcon from '@material-ui/icons/Notifications'
 import React from 'react'
+import { useHistory } from 'react-router-dom'
 import styled from 'styled-components'
 import { DRAWER_WIDTH } from '../../common/const'
-import { Link, RouterProps, useHistory } from 'react-router-dom'
 import { auth } from '../../common/firebase/firebaseClient'
 import { AuthContext } from '../../context/AuthContext'
 
@@ -160,12 +160,7 @@ export default function Appbar({
               </SectionMobile>
             </>
           ) : (
-            <Button
-              variant="contained"
-              color="primary"
-              component={Link}
-              to="/login"
-            >
+            <Button variant="contained" color="primary" href="/login">
               Login
             </Button>
           )}

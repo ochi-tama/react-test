@@ -1,23 +1,27 @@
 import React from 'react'
-import { Route, Switch } from 'react-router-dom'
+import { Redirect, Route, Switch } from 'react-router-dom'
 import styled from 'styled-components'
 import Layout from './components/Layout/Layout'
+import { AuthContext } from './context/AuthContext'
 import Login from './pages/Login/Login'
 import Search from './pages/Search/Search'
 import Top from './pages/Top/Top'
-import { AuthContext } from './context/AuthContext'
 
 function App(): JSX.Element {
   const { currentUser } = React.useContext(AuthContext)
   return (
     <RootDiv>
-      <Layout authenticated={!!currentUser}>
-        <Switch>
-          <Route exact path="/search" component={Search} />
-          <Route exact path="/login" component={Login} />
-          <Route component={Top} />
-        </Switch>
-      </Layout>
+      <Switch>
+        <Route exact path="/login">
+          {!!currentUser ? <Redirect to="/" /> : <Login />}
+        </Route>
+        <Layout authenticated={!!currentUser}>
+          <Switch>
+            <Route exact path="/search" component={Search} />
+            <Route component={Top} />
+          </Switch>
+        </Layout>
+      </Switch>
     </RootDiv>
   )
 }
