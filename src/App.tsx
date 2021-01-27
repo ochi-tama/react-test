@@ -10,19 +10,19 @@ import Top from './pages/Top/Top'
 function App(): JSX.Element {
   const { currentUser } = React.useContext(AuthContext)
   return (
-    <RootDiv>
-      <Switch>
-        <Route exact path="/login">
-          {!!currentUser ? <Redirect to="/" /> : <Login />}
-        </Route>
+    <Switch>
+      <Route exact path="/login">
+        {!!currentUser ? <Redirect to="/" /> : <Login />}
+      </Route>
+      <RootDiv>
         <Layout authenticated={!!currentUser}>
           <Switch>
             <Route exact path="/search" component={Search} />
             <Route component={Top} />
           </Switch>
         </Layout>
-      </Switch>
-    </RootDiv>
+      </RootDiv>
+    </Switch>
   )
 }
 
