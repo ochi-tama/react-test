@@ -4,10 +4,14 @@ import AppBar from '../../components/Layout/AppBar'
 import ExpandableDrawer from '../../components/Layout/ExpandableDrawer'
 
 type Props = {
-  children: JSX.Element
+  authenticated: boolean
+  children: JSX.Element[] | JSX.Element
 }
 
-export default function Layout({ children }: Props): JSX.Element {
+export default function Layout({
+  authenticated,
+  children
+}: Props): JSX.Element {
   const [open, setOpen] = React.useState(true)
 
   const handleDrawerOpen = () => {
@@ -20,7 +24,11 @@ export default function Layout({ children }: Props): JSX.Element {
 
   return (
     <>
-      <AppBar open={open} handleOpen={handleDrawerOpen} />
+      <AppBar
+        authenticated={authenticated}
+        open={open}
+        handleOpen={handleDrawerOpen}
+      />
       <ExpandableDrawer open={open} handleClose={handleDrawerClose} />
       <MainContent>
         <SpacerDiv />

@@ -1,5 +1,6 @@
 import React from 'react'
+import FirebaseAuth from '../../components/Auth/FirebaseAuth'
 
 export default function Login(): JSX.Element {
-  return <div>Login Page</div>
+  return <FirebaseAuth />
 }

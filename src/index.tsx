@@ -10,6 +10,8 @@ import App from './App'
 import theme from './assets/theme'
 import './index.css'
 import reportWebVitals from './reportWebVitals'
+import './common/firebase/firebaseClient'
+import { AuthProvider } from './context/AuthContext'
 
 ReactDOM.render(
   <React.StrictMode>
@@ -17,7 +19,9 @@ ReactDOM.render(
       <StyledThemeProvider theme={theme}>
         <BrowserRouter>
           <CssBaseline />
-          <App />
+          <AuthProvider>
+            <App />
+          </AuthProvider>
         </BrowserRouter>
       </StyledThemeProvider>
     </MaterialThemeProvider>
