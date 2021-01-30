@@ -6,6 +6,7 @@ import { AuthContext } from './context/AuthContext'
 import Login from './pages/Login/Login'
 import Search from './pages/Search/Search'
 import Top from './pages/Top/Top'
+import Document from './pages/Document/Document'
 
 function App(): JSX.Element {
   const { currentUser } = React.useContext(AuthContext)
@@ -18,6 +19,7 @@ function App(): JSX.Element {
         <Layout authenticated={!!currentUser}>
           <Switch>
             <Route exact path="/search" component={Search} />
+            <Route exact path="/documents" component={Document} />
             <Route component={Top} />
           </Switch>
         </Layout>
