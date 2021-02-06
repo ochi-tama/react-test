@@ -13,6 +13,7 @@ const db = firebase.firestore()
 const storage = firebase.storage()
 const auth = firebase.auth()
 if (location.hostname === 'localhost') {
+  auth.useEmulator('http://localhost:9099')
   db.useEmulator('localhost', 8080)
 }
 export { auth, db, storage }
