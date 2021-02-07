@@ -1,4 +1,5 @@
-import React from 'react'
+/* eslint-disable no-console */
+import Grid from '@material-ui/core/Grid'
 import Paper from '@material-ui/core/Paper'
 import Table from '@material-ui/core/Table'
 import TableBody from '@material-ui/core/TableBody'
@@ -7,8 +8,10 @@ import TableContainer from '@material-ui/core/TableContainer'
 import TableHead from '@material-ui/core/TableHead'
 import TablePagination from '@material-ui/core/TablePagination'
 import TableRow from '@material-ui/core/TableRow'
-import Grid from '@material-ui/core/Grid'
+import React from 'react'
 import styled from 'styled-components'
+import ProgresSnackBar from './ProgressSnackbar'
+import UploadButton from './UploadButton'
 
 interface Column {
   id: 'name' | 'modifiedAt' | 'fileSize' | 'status' | 'tags'
@@ -89,67 +92,80 @@ function Document(): JSX.Element {
     setRowsPerPage(+event.target.value)
     setPage(0)
   }
+
+  const fileUploadHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log(event.target.files)
+  }
+
   return (
-    <Grid container xs={12}>
-      <Grid item xs={12} spacing={2}>
-        ドキュメント一覧
-      </Grid>
-      <Grid item xs={12}>
-        <RootPaper>
-          <StyledTableContainer>
-            <Table stickyHeader aria-label="sticky table">
-              <TableHead>
-                <TableRow>
-                  {columns.map((column) => (
-                    <TableCell
-                      key={column.id}
-                      align={column.align}
-                      style={{ minWidth: column.minWidth }}
-                    >
-                      {column.columnName}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {rows
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((row) => {
-                    return (
-                      <TableRow
-                        hover
-                        role="checkbox"
-                        tabIndex={-1}
-                        key={row.name}
+    <>
+      <Grid container>
+        <Grid item xs={12}>
+          ドキュメント一覧
+        </Grid>
+        <MenuGridContainer container justify="flex-end">
+          <Grid item>
+            <UploadButton handler={fileUploadHandler} />
+          </Grid>
+        </MenuGridContainer>
+        <Grid item xs={12}>
+          <RootPaper>
+            <StyledTableContainer>
+              <Table stickyHeader aria-label="sticky table">
+                <TableHead>
+                  <TableRow>
+                    {columns.map((column) => (
+                      <TableCell
+                        key={column.id}
+                        align={column.align}
+                        style={{ minWidth: column.minWidth }}
                       >
-                        {columns.map((column) => {
-                          const value = row[column.id]
-                          return (
-                            <TableCell key={column.id} align={column.align}>
-                              {column.format && typeof value === 'number'
-                                ? column.format(value)
-                                : value}
-                            </TableCell>
-                          )
-                        })}
-                      </TableRow>
-                    )
-                  })}
-              </TableBody>
-            </Table>
-          </StyledTableContainer>
-          <TablePagination
-            rowsPerPageOptions={[10, 25, 100]}
-            component="div"
-            count={rows.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onChangePage={handleChangePage}
-            onChangeRowsPerPage={handleChangeRowsPerPage}
-          />
-        </RootPaper>
+                        {column.columnName}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {rows
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((row) => {
+                      return (
+                        <TableRow
+                          hover
+                          role="checkbox"
+                          tabIndex={-1}
+                          key={row.name}
+                        >
+                          {columns.map((column) => {
+                            const value = row[column.id]
+                            return (
+                              <TableCell key={column.id} align={column.align}>
+                                {column.format && typeof value === 'number'
+                                  ? column.format(value)
+                                  : value}
+                              </TableCell>
+                            )
+                          })}
+                        </TableRow>
+                      )
+                    })}
+                </TableBody>
+              </Table>
+            </StyledTableContainer>
+            <TablePagination
+              rowsPerPageOptions={[10, 25, 100]}
+              component="div"
+              count={rows.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onChangePage={handleChangePage}
+              onChangeRowsPerPage={handleChangeRowsPerPage}
+            />
+          </RootPaper>
+        </Grid>
       </Grid>
-    </Grid>
+      <ProgresSnackBar />
+    </>
   )
 }
 
@@ -158,6 +174,9 @@ const RootPaper = styled(Paper)`
 `
 const StyledTableContainer = styled(TableContainer)`
   max-height: 440px;
+`
+const MenuGridContainer = styled(Grid)`
+  margin-bottom: 1em;
 `
 
 export default Document
