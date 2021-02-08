@@ -113,7 +113,7 @@ function ProgressSnackbar(): JSX.Element {
         <Header>アップロードファイル</Header>
       </StyledAccordionSummary>
       <StyledAccordionDetails>
-        <FixedList aria-label="mailbox folders">
+        <FixedList aria-label="uploading document">
           <ListItem button>
             <ListItemText primary="Inbox" />
           </ListItem>
@@ -125,6 +125,18 @@ function ProgressSnackbar(): JSX.Element {
             <ListItemText primary="Trash" />
           </ListItem>
           <Divider light />
+          <ListItem button>
+            <ListItemText primary="Spam" />
+          </ListItem>
+          <ListItem button>
+            <ListItemText primary="Spam" />
+          </ListItem>
+          <ListItem button>
+            <ListItemText primary="Spam" />
+          </ListItem>
+          <ListItem button>
+            <ListItemText primary="Spam" />
+          </ListItem>
           <ListItem button>
             <ListItemText primary="Spam" />
           </ListItem>
@@ -173,6 +185,8 @@ const FixedList = styled(List)`
   width: 100%;
   &.MuiList-root {
     padding: 0;
+    overflow: auto;
+    max-height: 250px;
   }
 `
 
