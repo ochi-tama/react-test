@@ -81,9 +81,23 @@ const rows = [
 function Document(): JSX.Element {
   const [page, setPage] = React.useState(0)
   const [rowsPerPage, setRowsPerPage] = React.useState(10)
+  const [openSnackbar, setOpenSnackbar] = React.useState(false)
+  const [fileList, setFileList] = React.useState<FileList | null>(null)
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage)
+  }
+
+  const handleCloseSnackbarIcon = (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
+    event.preventDefault()
+    setOpenSnackbar(false)
+    setFileList(null)
+  }
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false)
+    setFileList(null)
   }
 
   const handleChangeRowsPerPage = (
@@ -93,7 +107,9 @@ function Document(): JSX.Element {
     setPage(0)
   }
 
-  const fileUploadHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlefileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFileList(event.target.files)
+    setOpenSnackbar(true)
     console.log(event.target.files)
   }
 
@@ -105,7 +121,7 @@ function Document(): JSX.Element {
         </Grid>
         <MenuGridContainer container justify="flex-end">
           <Grid item>
-            <UploadButton handler={fileUploadHandler} />
+            <UploadButton handler={handlefileUpload} />
           </Grid>
         </MenuGridContainer>
         <Grid item xs={12}>
@@ -164,7 +180,12 @@ function Document(): JSX.Element {
           </RootPaper>
         </Grid>
       </Grid>
-      <ProgresSnackBar />
+      <ProgresSnackBar
+        open={openSnackbar}
+        fileList={fileList}
+        handleCloseIcon={handleCloseSnackbarIcon}
+        handleClose={handleCloseSnackbar}
+      />
     </>
   )
 }
