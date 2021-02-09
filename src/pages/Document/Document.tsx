@@ -82,7 +82,7 @@ function Document(): JSX.Element {
   const [page, setPage] = React.useState(0)
   const [rowsPerPage, setRowsPerPage] = React.useState(10)
   const [openSnackbar, setOpenSnackbar] = React.useState(false)
-  const [fileList, setFileList] = React.useState<FileList | null>(null)
+  const [fileList, setFileList] = React.useState<File[]>([])
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage)
@@ -93,11 +93,11 @@ function Document(): JSX.Element {
   ) => {
     event.preventDefault()
     setOpenSnackbar(false)
-    setFileList(null)
+    setFileList([])
   }
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false)
-    setFileList(null)
+    setFileList([])
   }
 
   const handleChangeRowsPerPage = (
@@ -108,9 +108,9 @@ function Document(): JSX.Element {
   }
 
   const handlefileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setFileList(event.target.files)
+    const appendFileList = Array.from(event.target.files as FileList)
+    setFileList(fileList.concat(appendFileList))
     setOpenSnackbar(true)
-    console.log(event.target.files)
   }
 
   return (

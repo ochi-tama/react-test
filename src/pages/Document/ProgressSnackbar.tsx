@@ -2,16 +2,20 @@
 import Accordion from '@material-ui/core/Accordion'
 import AccordionDetails from '@material-ui/core/AccordionDetails'
 import AccordionSummary from '@material-ui/core/AccordionSummary'
+import CircularProgress from '@material-ui/core/CircularProgress'
 import Divider from '@material-ui/core/Divider'
 import IconButton from '@material-ui/core/IconButton'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
+import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ListItemText from '@material-ui/core/ListItemText'
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
 import Snackbar, { SnackbarOrigin } from '@material-ui/core/Snackbar'
 import { useTheme } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import useMediaQuery from '@material-ui/core/useMediaQuery'
 import CloseIcon from '@material-ui/icons/Close'
+import DescriptionIcon from '@material-ui/icons/Description'
 import ExpandLessIcon from '@material-ui/icons/ExpandLess'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import React, { useEffect } from 'react'
@@ -23,13 +27,14 @@ export interface State extends SnackbarOrigin {
 
 type Props = {
   open: boolean
-  fileList: FileList | null
+  fileList: File[]
   handleCloseIcon: (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => void
   handleClose: () => void
 }
 
+// TODO: ファイルアップロード中に閉じる場合は警告が出るようにする
 function ProgressSnackbar({
   open: openByParent,
   fileList,
@@ -65,24 +70,32 @@ function ProgressSnackbar({
   }
 
   const progressList = React.useMemo(() => {
-    const listItems: Array<JSX.Element> = []
-    if (fileList) {
-      for (let i = 0; i < fileList.length; i++) {
-        const file = fileList.item(i)
-        // TODO: ファイルアイコンとプログレスを追加する
-        listItems.push(
-          <ListItem>
-            <ListItemText key={i}>{file?.name} </ListItemText>
-          </ListItem>
-        )
-        listItems.push(<Divider />)
+    const fileNum = fileList.length
+    const listItems = fileList.map((file, index) => {
+      const fileType = file?.name.split('.').pop()
+      let fileIcon
+      if (fileType === 'pdf') {
+        fileIcon = <DescriptionIcon color="secondary" />
+      } else {
+        fileIcon = <DescriptionIcon color="primary" />
       }
-      listItems.pop()
-    }
+      return (
+        <React.Fragment key={index}>
+          <ListItem>
+            <ListItemIcon>{fileIcon}</ListItemIcon>
+            <OverflowListItemText>{file?.name} </OverflowListItemText>
+            <ListItemSecondaryAction>
+              <CircularProgress size={25} variant="determinate" value={100} />
+            </ListItemSecondaryAction>
+          </ListItem>
+          {index !== fileNum - 1 && <Divider />}
+        </React.Fragment>
+      )
+    })
     return <FixedList aria-label="document to upload">{listItems}</FixedList>
   }, [fileList])
   const uploadList = (
-    <Accordion expanded={openDetail}>
+    <StyledAccordion expanded={openDetail}>
       <StyledAccordionSummary
         IconButtonProps={{ disableRipple: true, disableTouchRipple: true }}
         expandIcon={
@@ -105,7 +118,7 @@ function ProgressSnackbar({
         <Header>アップロードファイル</Header>
       </StyledAccordionSummary>
       <StyledAccordionDetails>{progressList}</StyledAccordionDetails>
-    </Accordion>
+    </StyledAccordion>
   )
 
   return (
@@ -147,6 +160,13 @@ const Header = styled(Typography)`
   font-size: ${(props) => props.theme.typography.pxToRem(15)};
   flex-shrink: 0;
 `
+const StyledAccordion = styled(Accordion)`
+  width: 90vw;
+  ${(props) => props.theme.breakpoints.up('sm')} {
+    width: 30vw;
+  }
+`
+
 const StyledAccordionSummary = styled(AccordionSummary)`
   color: white;
   background-color: #424242;
@@ -175,3 +195,11 @@ const StyledAccordionDetails = styled(AccordionDetails)`
   }
 `
 const ButtonDiv = styled(IconButton)``
+
+const OverflowListItemText = styled(ListItemText)`
+  .MuiTypography-root {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+`
