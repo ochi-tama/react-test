@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-console */
 import Grid from '@material-ui/core/Grid'
 import Paper from '@material-ui/core/Paper'
@@ -13,6 +14,7 @@ import styled from 'styled-components'
 import firebase, { storage } from '../../common/firebase/firebaseClient'
 import ProgresSnackBar from './ProgressSnackbar'
 import UploadButton from './UploadButton'
+import update from 'immutability-helper'
 
 interface Column {
   id: 'name' | 'modifiedAt' | 'fileSize' | 'status' | 'tags'
@@ -118,24 +120,55 @@ function Document(): JSX.Element {
     setPage(0)
   }
 
-  const handlefileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlefileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const files = Array.from(event.target.files as FileList)
     const newFileList = Object.assign({}, fileList)
     files.forEach((file) => {
-      newFileList[file.name] = { file: file, progress: 5, uploaded: false }
+      newFileList[file.name] = { file: file, progress: 0, uploaded: false }
     })
-    setFileList(newFileList)
+    setFileList(() => {
+      return newFileList
+    })
+    console.log(fileList)
     setOpenSnackbar(true)
+    await Promise.all(files.map(uploadFiles))
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const uploadFiles = async (file: File) => {
+    /*
+    const name = file.name
+    setFileList((prevState) => {
+      const newState = update(prevState, {
+        name: { $set: { file: file, progress: 10, uploaded: false } }
+      })
+      return prevState
+    })
+    console.log(fileList)
+    */
+
     const storageRef = storage.ref()
     const uploadTask = storageRef.child(`documents/${file.name}`).put(file)
     try {
       uploadTask.on('state_changed', (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+        const progress = Math.round(
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+        )
+        const uploaded = progress >= 100 ? true : false
         console.log('Upload is ' + progress + '% done')
+        console.log(fileList)
+        setFileList((prevState) => {
+          const name = file.name
+          const newState = update(prevState, {
+            [name]: {
+              $set: { file: file, progress: progress, uploaded: uploaded }
+            }
+          })
+          return newState
+        })
+
         switch (snapshot.state) {
           case firebase.storage.TaskState.PAUSED: // or 'paused'
             console.log('Upload is paused')
@@ -149,6 +182,8 @@ function Document(): JSX.Element {
       uploadTask.snapshot.ref.getDownloadURL().then(function (downloadURL) {
         console.log('File available at', downloadURL)
       })
+    } finally {
+      console.log('Upload ' + file.name + ' done')
     }
   }
 
@@ -228,15 +263,15 @@ function Document(): JSX.Element {
     </>
   )
 }
+export default Document
 
 const RootPaper = styled(Paper)`
   width: 100%;
 `
+
 const StyledTableContainer = styled(TableContainer)`
   max-height: 440px;
 `
 const MenuGridContainer = styled(Grid)`
   margin-bottom: 1em;
 `
-
-export default Document
