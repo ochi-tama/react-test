@@ -1,3 +1,4 @@
+import './wdyr'
 import {
   CssBaseline,
   ThemeProvider as MaterialThemeProvider
