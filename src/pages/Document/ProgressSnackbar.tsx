@@ -2,24 +2,18 @@
 import Accordion from '@material-ui/core/Accordion'
 import AccordionDetails from '@material-ui/core/AccordionDetails'
 import AccordionSummary from '@material-ui/core/AccordionSummary'
-import CircularProgress from '@material-ui/core/CircularProgress'
-import Divider from '@material-ui/core/Divider'
 import IconButton from '@material-ui/core/IconButton'
-import List from '@material-ui/core/List'
-import ListItem from '@material-ui/core/ListItem'
-import ListItemIcon from '@material-ui/core/ListItemIcon'
-import ListItemText from '@material-ui/core/ListItemText'
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
 import Snackbar, { SnackbarOrigin } from '@material-ui/core/Snackbar'
 import { useTheme } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import useMediaQuery from '@material-ui/core/useMediaQuery'
 import CloseIcon from '@material-ui/icons/Close'
-import DescriptionIcon from '@material-ui/icons/Description'
 import ExpandLessIcon from '@material-ui/icons/ExpandLess'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import React, { useEffect } from 'react'
 import styled from 'styled-components'
+import { FileToUpload } from './Document'
+import ProgressFileList from './ProgressFileList'
 
 export interface State extends SnackbarOrigin {
   open: boolean
@@ -27,7 +21,7 @@ export interface State extends SnackbarOrigin {
 
 type Props = {
   open: boolean
-  fileList: File[]
+  fileList: FileToUpload
   handleCloseIcon: (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => void
@@ -69,31 +63,6 @@ function ProgressSnackbar({
     setOpenDetail(!openDetail)
   }
 
-  const progressList = React.useMemo(() => {
-    const fileNum = fileList.length
-    const listItems = fileList.map((file, index) => {
-      const fileType = file?.name.split('.').pop()
-      let fileIcon
-      if (fileType === 'pdf') {
-        fileIcon = <DescriptionIcon color="secondary" />
-      } else {
-        fileIcon = <DescriptionIcon color="primary" />
-      }
-      return (
-        <React.Fragment key={index}>
-          <ListItem>
-            <ListItemIcon>{fileIcon}</ListItemIcon>
-            <OverflowListItemText>{file?.name} </OverflowListItemText>
-            <ListItemSecondaryAction>
-              <CircularProgress size={25} variant="determinate" value={100} />
-            </ListItemSecondaryAction>
-          </ListItem>
-          {index !== fileNum - 1 && <Divider />}
-        </React.Fragment>
-      )
-    })
-    return <FixedList aria-label="document to upload">{listItems}</FixedList>
-  }, [fileList])
   const uploadList = (
     <StyledAccordion expanded={openDetail}>
       <StyledAccordionSummary
@@ -117,7 +86,9 @@ function ProgressSnackbar({
       >
         <Header>アップロードファイル</Header>
       </StyledAccordionSummary>
-      <StyledAccordionDetails>{progressList}</StyledAccordionDetails>
+      <StyledAccordionDetails>
+        <ProgressFileList fileList={fileList} />
+      </StyledAccordionDetails>
     </StyledAccordion>
   )
 
@@ -138,15 +109,6 @@ function ProgressSnackbar({
 }
 
 export default ProgressSnackbar
-
-const FixedList = styled(List)`
-  width: 100%;
-  &.MuiList-root {
-    padding: 0;
-    overflow: auto;
-    max-height: 250px;
-  }
-`
 
 // TODO: XS時に真ん中に寄せられていない
 const StyledSnackbar = styled(Snackbar)`
@@ -195,11 +157,3 @@ const StyledAccordionDetails = styled(AccordionDetails)`
   }
 `
 const ButtonDiv = styled(IconButton)``
-
-const OverflowListItemText = styled(ListItemText)`
-  .MuiTypography-root {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-`

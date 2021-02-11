@@ -10,6 +10,7 @@ import TablePagination from '@material-ui/core/TablePagination'
 import TableRow from '@material-ui/core/TableRow'
 import React from 'react'
 import styled from 'styled-components'
+import firebase, { storage } from '../../common/firebase/firebaseClient'
 import ProgresSnackBar from './ProgressSnackbar'
 import UploadButton from './UploadButton'
 
@@ -78,11 +79,21 @@ const rows = [
   createData('United States3', 'アップロード失敗', 17, '2021/1/27', 'test')
 ]
 
+export interface FileInfo {
+  file: File
+  progress: number
+  uploaded: boolean
+}
+
+export interface FileToUpload {
+  [name: string]: FileInfo
+}
+
 function Document(): JSX.Element {
   const [page, setPage] = React.useState(0)
   const [rowsPerPage, setRowsPerPage] = React.useState(10)
   const [openSnackbar, setOpenSnackbar] = React.useState(false)
-  const [fileList, setFileList] = React.useState<File[]>([])
+  const [fileList, setFileList] = React.useState<FileToUpload>({})
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage)
@@ -93,11 +104,11 @@ function Document(): JSX.Element {
   ) => {
     event.preventDefault()
     setOpenSnackbar(false)
-    setFileList([])
+    setFileList({})
   }
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false)
-    setFileList([])
+    setFileList({})
   }
 
   const handleChangeRowsPerPage = (
@@ -108,9 +119,37 @@ function Document(): JSX.Element {
   }
 
   const handlefileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const appendFileList = Array.from(event.target.files as FileList)
-    setFileList(fileList.concat(appendFileList))
+    const files = Array.from(event.target.files as FileList)
+    const newFileList = Object.assign({}, fileList)
+    files.forEach((file) => {
+      newFileList[file.name] = { file: file, progress: 5, uploaded: false }
+    })
+    setFileList(newFileList)
     setOpenSnackbar(true)
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const uploadFiles = async (file: File) => {
+    const storageRef = storage.ref()
+    const uploadTask = storageRef.child(`documents/${file.name}`).put(file)
+    try {
+      uploadTask.on('state_changed', (snapshot) => {
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+        console.log('Upload is ' + progress + '% done')
+        switch (snapshot.state) {
+          case firebase.storage.TaskState.PAUSED: // or 'paused'
+            console.log('Upload is paused')
+            break
+          case firebase.storage.TaskState.RUNNING: // or 'running'
+            console.log('Upload is running')
+            break
+        }
+      })
+    } catch (error) {
+      uploadTask.snapshot.ref.getDownloadURL().then(function (downloadURL) {
+        console.log('File available at', downloadURL)
+      })
+    }
   }
 
   return (
