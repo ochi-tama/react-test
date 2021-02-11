@@ -83,6 +83,14 @@ export default function ExpandbleDrawer({
             <ListItemText primary={'コメント'} />
           </ListItem>
         </StyledNavLink>
+        <StyledNavLink exact to="/documents">
+          <ListItem button>
+            <ListItemIcon>
+              <CommentIcon />
+            </ListItemIcon>
+            <ListItemText primary={'ドキュメント'} />
+          </ListItem>
+        </StyledNavLink>
       </List>
       <Divider />
       <List>
