@@ -15,6 +15,7 @@ import firebase, { storage } from '../../common/firebase/firebaseClient'
 import ProgresSnackBar from './ProgressSnackbar'
 import UploadButton from './UploadButton'
 import update from 'immutability-helper'
+import { AuthContext } from '../../context/AuthContext'
 
 interface Column {
   id: 'name' | 'modifiedAt' | 'fileSize' | 'status' | 'tags'
@@ -96,6 +97,7 @@ function Document(): JSX.Element {
   const [rowsPerPage, setRowsPerPage] = React.useState(10)
   const [openSnackbar, setOpenSnackbar] = React.useState(false)
   const [fileList, setFileList] = React.useState<FileToUpload>({})
+  const { currentUser, info } = React.useContext(AuthContext)
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage)
@@ -136,6 +138,10 @@ function Document(): JSX.Element {
     await Promise.all(files.map(uploadFiles))
   }
 
+  React.useEffect(() => {
+    setFileList({})
+  }, [])
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const uploadFiles = async (file: File) => {
     /*
@@ -150,7 +156,15 @@ function Document(): JSX.Element {
     */
 
     const storageRef = storage.ref()
-    const uploadTask = storageRef.child(`documents/${file.name}`).put(file)
+    // TODO: Userから所属テナントを切り替えられるようにする
+    const metadata: firebase.storage.UploadMetadata = info?.workspaces
+      ? {
+          customMetadata: { workspace: info?.workspaces[0] }
+        }
+      : {}
+    const uploadTask = storageRef
+      .child(`documents/${file.name}`)
+      .put(file, metadata)
     try {
       uploadTask.on('state_changed', (snapshot) => {
         const progress = Math.round(
