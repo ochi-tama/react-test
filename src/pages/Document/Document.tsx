@@ -157,13 +157,20 @@ function Document(): JSX.Element {
 
     const storageRef = storage.ref()
     // TODO: Userから所属テナントを切り替えられるようにする
+    // Updateトリガー実行時にユーザー情報を紐付けるためのメタデータを付与
     const metadata: firebase.storage.UploadMetadata = info?.workspaces
       ? {
-          customMetadata: { workspace: info?.workspaces[0] }
+          customMetadata: {
+            workspace: info?.workspaces[0],
+            lastUpdatedBy: currentUser?.uid as string
+          }
         }
       : {}
+    // ファイル名(拡張子を除く)を取得する
+    const folderMatch = file.name.match(/(.*)\..*/)
+    const folderName = folderMatch != null ? folderMatch[1] : file.name
     const uploadTask = storageRef
-      .child(`documents/${file.name}`)
+      .child(`${info?.workspaces[0]}/${folderName}/${file.name}`)
       .put(file, metadata)
     try {
       uploadTask.on('state_changed', (snapshot) => {
@@ -172,7 +179,6 @@ function Document(): JSX.Element {
         )
         const uploaded = progress >= 100 ? true : false
         console.log('Upload is ' + progress + '% done')
-        console.log(fileList)
         setFileList((prevState) => {
           const name = file.name
           const newState = update(prevState, {
