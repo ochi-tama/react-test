@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-console */
+import { Chip } from '@material-ui/core'
 import Grid from '@material-ui/core/Grid'
 import Paper from '@material-ui/core/Paper'
 import Table from '@material-ui/core/Table'
@@ -9,20 +10,20 @@ import TableContainer from '@material-ui/core/TableContainer'
 import TableHead from '@material-ui/core/TableHead'
 import TablePagination from '@material-ui/core/TablePagination'
 import TableRow from '@material-ui/core/TableRow'
+import update from 'immutability-helper'
 import React from 'react'
 import styled from 'styled-components'
-import firebase, { storage } from '../../common/firebase/firebaseClient'
+import firebase, { db, storage } from '../../common/firebase/firebaseClient'
+import { AuthContext } from '../../context/AuthContext'
+import { DocumentInfo } from '../../schema/documentInfo'
 import ProgresSnackBar from './ProgressSnackbar'
 import UploadButton from './UploadButton'
-import update from 'immutability-helper'
-import { AuthContext } from '../../context/AuthContext'
 
 interface Column {
   id: 'name' | 'modifiedAt' | 'fileSize' | 'status' | 'tags'
   columnName: string
   minWidth?: number
   align?: 'right' | 'left'
-  format?: (value: string) => string
 }
 
 const columns: Column[] = [
@@ -47,40 +48,10 @@ const columns: Column[] = [
 interface Data {
   name: string
   status: string
-  fileSize: string
+  fileSize: number
   modifiedAt: string
-  tags: string
+  tags: string[] | undefined
 }
-
-function createData(
-  name: string,
-  status: string,
-  fileSize: number,
-  modifiedAt: string,
-  tags: string
-): Data {
-  const fileMbSize = `${fileSize} MB`
-  return { name, status, fileSize: fileMbSize, modifiedAt, tags }
-}
-
-const rows = [
-  createData('India', 'アップロード完了', 27, '2020/11/27', 'test'),
-  createData('China', '解析完了', 10, '2020/11/27', 'test'),
-  createData('Italy', 'HTML変換中', 15, '2020/11/27', 'test'),
-  createData('United States', 'アップロード失敗', 17, '2021/1/27', 'test'),
-  createData('India1', 'アップロード完了', 27, '2020/11/27', 'test'),
-  createData('China1', '解析完了', 10, '2020/11/27', 'test'),
-  createData('Italy1', 'HTML変換中', 15, '2020/11/27', 'test'),
-  createData('United States1', 'アップロード失敗', 17, '2021/1/27', 'test'),
-  createData('India2', 'アップロード完了', 27, '2020/11/27', 'test'),
-  createData('China2', '解析完了', 10, '2020/11/27', 'test'),
-  createData('Italy2', 'HTML変換中', 15, '2020/11/27', 'test'),
-  createData('United States2', 'アップロード失敗', 17, '2021/1/27', 'test'),
-  createData('India3', 'アップロード完了', 27, '2020/11/27', 'test'),
-  createData('China3', '解析完了', 10, '2020/11/27', 'test'),
-  createData('Italy3', 'HTML変換中', 15, '2020/11/27', 'test'),
-  createData('United States3', 'アップロード失敗', 17, '2021/1/27', 'test')
-]
 
 export interface FileInfo {
   file: File
@@ -93,6 +64,7 @@ export interface FileToUpload {
 }
 
 function Document(): JSX.Element {
+  const [tableData, setTableData] = React.useState<Data[]>([])
   const [page, setPage] = React.useState(0)
   const [rowsPerPage, setRowsPerPage] = React.useState(10)
   const [openSnackbar, setOpenSnackbar] = React.useState(false)
@@ -138,23 +110,53 @@ function Document(): JSX.Element {
     await Promise.all(files.map(uploadFiles))
   }
 
+  const initializeData = async () => {
+    const workspace = info?.workspaces?.[0]
+    if (workspace == null) {
+      return
+    }
+    console.log(workspace)
+
+    try {
+      const docRef = await db
+        .collection('workspaces')
+        .doc(workspace)
+        .collection('documents')
+        .orderBy('updatedAt', 'desc')
+        .limit(10)
+        .get()
+      const data: Data[] = []
+      docRef.forEach((ref) => {
+        const docInfo = ref.data() as DocumentInfo
+        let status = '未処理'
+        if (docInfo.analyzeStatus?.parsedHtmlPath) {
+          status = '解析完了'
+        } else if (docInfo.analyzeStatus?.parsedHtmlPath) {
+          status = 'パース完了'
+        }
+        const newData: Data = {
+          name: docInfo.name,
+          status: status,
+          fileSize: docInfo.size,
+          modifiedAt: docInfo.updatedAt.toDate().toLocaleDateString(),
+          tags: docInfo.tags
+        }
+        data.push(newData)
+      })
+      setTableData(data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   React.useEffect(() => {
     setFileList({})
   }, [])
+  React.useEffect(() => {
+    initializeData()
+  }, [info?.workspaces])
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const uploadFiles = async (file: File) => {
-    /*
-    const name = file.name
-    setFileList((prevState) => {
-      const newState = update(prevState, {
-        name: { $set: { file: file, progress: 10, uploaded: false } }
-      })
-      return prevState
-    })
-    console.log(fileList)
-    */
-
     const storageRef = storage.ref()
     // TODO: Userから所属テナントを切り替えられるようにする
     // Updateトリガー実行時にユーザー情報を紐付けるためのメタデータを付与
@@ -170,7 +172,7 @@ function Document(): JSX.Element {
     const folderMatch = file.name.match(/(.*)\..*/)
     const folderName = folderMatch != null ? folderMatch[1] : file.name
     const uploadTask = storageRef
-      .child(`${info?.workspaces[0]}/${folderName}/${file.name}`)
+      .child(`${info?.workspaces?.[0]}/${folderName}/${file.name}`)
       .put(file, metadata)
     try {
       uploadTask.on('state_changed', (snapshot) => {
@@ -236,7 +238,7 @@ function Document(): JSX.Element {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {rows
+                  {tableData
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((row) => {
                       return (
@@ -248,11 +250,21 @@ function Document(): JSX.Element {
                         >
                           {columns.map((column) => {
                             const value = row[column.id]
+                            const content =
+                              column.id === 'tags' ? (
+                                <SpacerDiv>
+                                  {(value as string[]).map((tag) => {
+                                    return (
+                                      <MarginedChip key={tag} label={tag} />
+                                    )
+                                  })}
+                                </SpacerDiv>
+                              ) : (
+                                value
+                              )
                             return (
                               <TableCell key={column.id} align={column.align}>
-                                {column.format && typeof value === 'number'
-                                  ? column.format(value)
-                                  : value}
+                                {content}
                               </TableCell>
                             )
                           })}
@@ -265,7 +277,7 @@ function Document(): JSX.Element {
             <TablePagination
               rowsPerPageOptions={[10, 25, 100]}
               component="div"
-              count={rows.length}
+              count={tableData.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onChangePage={handleChangePage}
@@ -288,10 +300,18 @@ export default Document
 const RootPaper = styled(Paper)`
   width: 100%;
 `
-
 const StyledTableContainer = styled(TableContainer)`
   max-height: 440px;
 `
 const MenuGridContainer = styled(Grid)`
   margin-bottom: 1em;
+`
+const SpacerDiv = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  padding: ${(props) => props.theme.spacing(0.5)};
+`
+const MarginedChip = styled(Chip)`
+  margin-right: ${(props) => props.theme.spacing(0.5)}px;
 `
