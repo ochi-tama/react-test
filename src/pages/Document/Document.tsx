@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-console */
+import { Chip } from '@material-ui/core'
 import Grid from '@material-ui/core/Grid'
 import Paper from '@material-ui/core/Paper'
 import Table from '@material-ui/core/Table'
@@ -7,21 +8,23 @@ import TableBody from '@material-ui/core/TableBody'
 import TableCell from '@material-ui/core/TableCell'
 import TableContainer from '@material-ui/core/TableContainer'
 import TableHead from '@material-ui/core/TableHead'
-import TablePagination from '@material-ui/core/TablePagination'
 import TableRow from '@material-ui/core/TableRow'
+import update from 'immutability-helper'
 import React from 'react'
+import InfiniteScroll from 'react-infinite-scroller'
 import styled from 'styled-components'
-import firebase, { storage } from '../../common/firebase/firebaseClient'
+import { extractFolderName } from '../../common/common'
+import firebase, { db, storage } from '../../common/firebase/firebaseClient'
+import { AuthContext } from '../../context/AuthContext'
+import { DocumentInfo } from '../../schema/documentInfo'
 import ProgresSnackBar from './ProgressSnackbar'
 import UploadButton from './UploadButton'
-import update from 'immutability-helper'
 
 interface Column {
   id: 'name' | 'modifiedAt' | 'fileSize' | 'status' | 'tags'
   columnName: string
   minWidth?: number
   align?: 'right' | 'left'
-  format?: (value: string) => string
 }
 
 const columns: Column[] = [
@@ -46,40 +49,10 @@ const columns: Column[] = [
 interface Data {
   name: string
   status: string
-  fileSize: string
+  fileSize: number
   modifiedAt: string
-  tags: string
+  tags: string[] | undefined
 }
-
-function createData(
-  name: string,
-  status: string,
-  fileSize: number,
-  modifiedAt: string,
-  tags: string
-): Data {
-  const fileMbSize = `${fileSize} MB`
-  return { name, status, fileSize: fileMbSize, modifiedAt, tags }
-}
-
-const rows = [
-  createData('India', 'アップロード完了', 27, '2020/11/27', 'test'),
-  createData('China', '解析完了', 10, '2020/11/27', 'test'),
-  createData('Italy', 'HTML変換中', 15, '2020/11/27', 'test'),
-  createData('United States', 'アップロード失敗', 17, '2021/1/27', 'test'),
-  createData('India1', 'アップロード完了', 27, '2020/11/27', 'test'),
-  createData('China1', '解析完了', 10, '2020/11/27', 'test'),
-  createData('Italy1', 'HTML変換中', 15, '2020/11/27', 'test'),
-  createData('United States1', 'アップロード失敗', 17, '2021/1/27', 'test'),
-  createData('India2', 'アップロード完了', 27, '2020/11/27', 'test'),
-  createData('China2', '解析完了', 10, '2020/11/27', 'test'),
-  createData('Italy2', 'HTML変換中', 15, '2020/11/27', 'test'),
-  createData('United States2', 'アップロード失敗', 17, '2021/1/27', 'test'),
-  createData('India3', 'アップロード完了', 27, '2020/11/27', 'test'),
-  createData('China3', '解析完了', 10, '2020/11/27', 'test'),
-  createData('Italy3', 'HTML変換中', 15, '2020/11/27', 'test'),
-  createData('United States3', 'アップロード失敗', 17, '2021/1/27', 'test')
-]
 
 export interface FileInfo {
   file: File
@@ -92,14 +65,16 @@ export interface FileToUpload {
 }
 
 function Document(): JSX.Element {
-  const [page, setPage] = React.useState(0)
+  const [currentSnapshot, setCurrentSnapshot] = React.useState<
+    firebase.firestore.QuerySnapshot<firebase.firestore.DocumentData>
+  >()
+  const [hasMoreItems, setHasMoreItems] = React.useState<boolean>(true)
+  const [isFetching, setIsFetching] = React.useState<boolean>(false)
+  const [tableData, setTableData] = React.useState<Data[]>([])
   const [rowsPerPage, setRowsPerPage] = React.useState(10)
   const [openSnackbar, setOpenSnackbar] = React.useState(false)
   const [fileList, setFileList] = React.useState<FileToUpload>({})
-
-  const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage)
-  }
+  const { currentUser, info } = React.useContext(AuthContext)
 
   const handleCloseSnackbarIcon = (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
@@ -117,7 +92,6 @@ function Document(): JSX.Element {
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     setRowsPerPage(+event.target.value)
-    setPage(0)
   }
 
   const handlefileUpload = async (
@@ -131,34 +105,98 @@ function Document(): JSX.Element {
     setFileList(() => {
       return newFileList
     })
-    console.log(fileList)
     setOpenSnackbar(true)
     await Promise.all(files.map(uploadFiles))
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const uploadFiles = async (file: File) => {
-    /*
-    const name = file.name
-    setFileList((prevState) => {
-      const newState = update(prevState, {
-        name: { $set: { file: file, progress: 10, uploaded: false } }
-      })
-      return prevState
-    })
-    console.log(fileList)
-    */
+  const fetchItems = async (page: number) => {
+    setIsFetching(true)
+    const workspace = info?.workspaces?.[0]
+    if (workspace == null) {
+      setIsFetching(false)
+      return
+    }
 
+    try {
+      let nextPageListQuery = db
+        .collection('workspaces')
+        .doc(workspace)
+        .collection('documents')
+        .orderBy('updatedAt', 'desc')
+
+      if (currentSnapshot != null) {
+        nextPageListQuery = nextPageListQuery
+          .startAfter(currentSnapshot?.docs[currentSnapshot.size - 1])
+          .limit(rowsPerPage)
+      } else {
+        nextPageListQuery = nextPageListQuery.limit(rowsPerPage)
+      }
+
+      const nextPageListRef = await nextPageListQuery.get()
+      const nextPageDocs = nextPageListRef.docs
+      if (nextPageDocs.length < rowsPerPage) {
+        setHasMoreItems(false)
+      }
+
+      const rows: Data[] = nextPageDocs.map(createRowData)
+      setCurrentSnapshot(() => {
+        return nextPageListRef
+      })
+
+      setTableData((prevState) => {
+        const data = prevState.slice()
+        data.push(...rows)
+        return data
+      })
+      setIsFetching(false)
+    } catch (error) {
+      console.log(error)
+      setIsFetching(false)
+    }
+  }
+
+  const createRowData = (
+    doc: firebase.firestore.QueryDocumentSnapshot<firebase.firestore.DocumentData>
+  ): Data => {
+    const docInfo = doc.data() as DocumentInfo
+    let status = '未処理'
+    if (docInfo.analyzeStatus?.parsedHtmlPath) {
+      status = '解析完了'
+    } else if (docInfo.analyzeStatus?.parsedHtmlPath) {
+      status = 'パース完了'
+    }
+    return {
+      name: docInfo.name,
+      status: status,
+      fileSize: docInfo.size,
+      modifiedAt: docInfo.updatedAt.toDate().toLocaleDateString(),
+      tags: docInfo.tags
+    }
+  }
+
+  const uploadFiles = async (file: File) => {
     const storageRef = storage.ref()
-    const uploadTask = storageRef.child(`documents/${file.name}`).put(file)
+    // TODO: Userから所属テナントを切り替えられるようにする
+    // Updateトリガー実行時にユーザー情報を紐付けるためのメタデータを付与
+    const metadata: firebase.storage.UploadMetadata = info?.workspaces
+      ? {
+          customMetadata: {
+            workspace: info?.workspaces[0],
+            lastUpdatedBy: currentUser?.uid as string
+          }
+        }
+      : {}
+    // ファイル名(拡張子を除く)を取得する
+    const folderName = extractFolderName(file.name)
+    const uploadTask = storageRef
+      .child(`${info?.workspaces?.[0]}/${folderName}/${file.name}`)
+      .put(file, metadata)
     try {
       uploadTask.on('state_changed', (snapshot) => {
         const progress = Math.round(
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100
         )
         const uploaded = progress >= 100 ? true : false
-        console.log('Upload is ' + progress + '% done')
-        console.log(fileList)
         setFileList((prevState) => {
           const name = file.name
           const newState = update(prevState, {
@@ -171,10 +209,8 @@ function Document(): JSX.Element {
 
         switch (snapshot.state) {
           case firebase.storage.TaskState.PAUSED: // or 'paused'
-            console.log('Upload is paused')
             break
           case firebase.storage.TaskState.RUNNING: // or 'running'
-            console.log('Upload is running')
             break
         }
       })
@@ -186,6 +222,33 @@ function Document(): JSX.Element {
       console.log('Upload ' + file.name + ' done')
     }
   }
+  const loader = <tr className="loader">Loading ...</tr>
+
+  const items = tableData.map((row) => {
+    const rowData = (
+      <TableRow hover role="checkbox" tabIndex={-1} key={row.name}>
+        {columns.map((column) => {
+          const value = row[column.id]
+          const content =
+            column.id === 'tags' ? (
+              <SpacerDiv>
+                {(value as string[]).map((tag) => (
+                  <MarginedChip key={tag} label={tag} />
+                ))}
+              </SpacerDiv>
+            ) : (
+              value
+            )
+          return (
+            <TableCell key={column.id} align={column.align}>
+              {content}
+            </TableCell>
+          )
+        })}
+      </TableRow>
+    )
+    return rowData
+  })
 
   return (
     <>
@@ -198,61 +261,7 @@ function Document(): JSX.Element {
             <UploadButton handler={handlefileUpload} />
           </Grid>
         </MenuGridContainer>
-        <Grid item xs={12}>
-          <RootPaper>
-            <StyledTableContainer>
-              <Table stickyHeader aria-label="sticky table">
-                <TableHead>
-                  <TableRow>
-                    {columns.map((column) => (
-                      <TableCell
-                        key={column.id}
-                        align={column.align}
-                        style={{ minWidth: column.minWidth }}
-                      >
-                        {column.columnName}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {rows
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((row) => {
-                      return (
-                        <TableRow
-                          hover
-                          role="checkbox"
-                          tabIndex={-1}
-                          key={row.name}
-                        >
-                          {columns.map((column) => {
-                            const value = row[column.id]
-                            return (
-                              <TableCell key={column.id} align={column.align}>
-                                {column.format && typeof value === 'number'
-                                  ? column.format(value)
-                                  : value}
-                              </TableCell>
-                            )
-                          })}
-                        </TableRow>
-                      )
-                    })}
-                </TableBody>
-              </Table>
-            </StyledTableContainer>
-            <TablePagination
-              rowsPerPageOptions={[10, 25, 100]}
-              component="div"
-              count={rows.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onChangePage={handleChangePage}
-              onChangeRowsPerPage={handleChangeRowsPerPage}
-            />
-          </RootPaper>
-        </Grid>
+        <Grid item xs={12}></Grid>
       </Grid>
       <ProgresSnackBar
         open={openSnackbar}
@@ -260,18 +269,75 @@ function Document(): JSX.Element {
         handleCloseIcon={handleCloseSnackbarIcon}
         handleClose={handleCloseSnackbar}
       />
+      <RootPaper>
+        <StyledTableContainer>
+          <InfiniteScroll
+            pageStart={0}
+            loadMore={fetchItems}
+            // https://github.com/danbovey/react-infinite-scroller/issues/143#issuecomment-736507748
+            // hasMoreはデータFetch中はfalseにしないと二重ロードが発生する
+            hasMore={!isFetching && hasMoreItems}
+            useWindow={false}
+          >
+            <Table stickyHeader aria-label="sticky table">
+              <TableHead>
+                <TableRow>
+                  {columns.map((column) => (
+                    <TableCell
+                      key={column.id}
+                      align={column.align}
+                      style={{ minWidth: column.minWidth }}
+                    >
+                      {column.columnName}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+
+              <TableBody>{items}</TableBody>
+            </Table>
+          </InfiniteScroll>
+        </StyledTableContainer>
+      </RootPaper>
     </>
   )
 }
-export default Document
 
 const RootPaper = styled(Paper)`
   width: 100%;
 `
-
 const StyledTableContainer = styled(TableContainer)`
-  max-height: 440px;
+  max-height: 700px;
 `
 const MenuGridContainer = styled(Grid)`
   margin-bottom: 1em;
 `
+const SpacerDiv = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  padding: ${(props) => props.theme.spacing(0.5)};
+`
+const MarginedChip = styled(Chip)`
+  margin-right: ${(props) => props.theme.spacing(0.5)}px;
+`
+const InfDiv = styled.div`
+  height: 400px;
+  overflow: auto;
+`
+
+/*
+const tableFooter = (
+  <TablePagination
+    rowsPerPageOptions={[10, 25, 100]}
+    component="div"
+    count={tableData.length}
+    rowsPerPage={rowsPerPage}
+    page={page}
+    onChangePage={handleChangePage}
+    onChangeRowsPerPage={handleChangeRowsPerPage}
+  />
+)
+*/
+
+export default Document
