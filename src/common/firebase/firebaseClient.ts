@@ -4,9 +4,9 @@ import 'firebase/auth'
 import 'firebase/firestore'
 import 'firebase/storage'
 import config from './config'
+
 if (!firebase.apps.length) {
   firebase.initializeApp(config)
-  console.log(firebase.app().name)
 }
 
 const db = firebase.firestore()
