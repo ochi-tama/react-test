@@ -1,18 +1,19 @@
-import './wdyr'
 import {
   CssBaseline,
   ThemeProvider as MaterialThemeProvider
 } from '@material-ui/core'
 import React from 'react'
 import ReactDOM from 'react-dom'
+import { Provider } from 'react-redux'
 import { BrowserRouter } from 'react-router-dom'
 import { ThemeProvider as StyledThemeProvider } from 'styled-components'
 import App from './App'
 import theme from './assets/theme'
-import './index.css'
-import reportWebVitals from './reportWebVitals'
 import './common/firebase/firebaseClient'
-import { AuthProvider } from './context/AuthContext'
+import './index.css'
+import store from './redux/store'
+import reportWebVitals from './reportWebVitals'
+import './wdyr'
 
 ReactDOM.render(
   <React.StrictMode>
@@ -20,9 +21,9 @@ ReactDOM.render(
       <StyledThemeProvider theme={theme}>
         <BrowserRouter>
           <CssBaseline />
-          <AuthProvider>
+          <Provider store={store}>
             <App />
-          </AuthProvider>
+          </Provider>
         </BrowserRouter>
       </StyledThemeProvider>
     </MaterialThemeProvider>

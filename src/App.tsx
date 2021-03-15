@@ -2,14 +2,14 @@ import React from 'react'
 import { Redirect, Route, Switch } from 'react-router-dom'
 import styled from 'styled-components'
 import Layout from './components/Layout/Layout'
-import { AuthContext } from './context/AuthContext'
+import Document from './pages/Document/Document'
 import Login from './pages/Login/Login'
 import Search from './pages/Search/Search'
 import Top from './pages/Top/Top'
-import Document from './pages/Document/Document'
+import { useSelector } from './redux/store'
 
 function App(): JSX.Element {
-  const { currentUser } = React.useContext(AuthContext)
+  const currentUser = useSelector((state) => state.auth.user)
   return (
     <Switch>
       <Route exact path="/login">

@@ -24,6 +24,8 @@ import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Checkbox from '@material-ui/core/Checkbox'
 import Button from '@material-ui/core/Button'
 import './Auth.css'
+import { useDispatch, useSelector } from '../../redux/store'
+import { fetchUserInfoWithLogin, setUserId } from '../../redux/auth/authSlice'
 
 // Configure FirebaseUI.
 function Copyright() {
@@ -60,16 +62,16 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 function FirebaseAuth(): JSX.Element {
-  const { setCurrentUser } = React.useContext(AuthContext)
+  const authState = useSelector((state) => state.auth)
+  const dispatch = useDispatch()
   const uiConfig: firebaseui.auth.Config = {
     callbacks: {
       signInSuccessWithAuthResult: (authResult) => {
         // ログイン成功時にauthcontextに保存する
         // https://firebase.google.com/docs/reference/android/com/google/firebase/auth/AuthResult
         const user = authResult.user as firebase.User
-        if (setCurrentUser) {
-          setCurrentUser(user)
-        }
+        dispatch(setUserId(user.uid))
+        dispatch(fetchUserInfoWithLogin())
         // User successfully signed in.
         // Return type determines whether we continue the redirect automatically
         // or whether we leave that to developer to handle.
