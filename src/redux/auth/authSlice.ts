@@ -43,15 +43,25 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(fetchUserInfoWithLogin.pending, (state) => {
-      state.loading = true
+      return {
+        ...state,
+        loading: true
+      }
     })
     builder.addCase(fetchUserInfoWithLogin.fulfilled, (state, action) => {
-      state.loading = false
-      state.user = action.payload
+      return {
+        ...state,
+        loading: false,
+        user: action.payload
+      }
     })
     builder.addCase(fetchUserInfoWithLogin.rejected, (state) => {
-      state.loading = false
-      state.errors['login'] = 'login failed'
+      const errors = state.errors
+      errors['login'] = 'ユーザー情報の取得に失敗'
+      return {
+        ...state,
+        errors: errors
+      }
     })
   }
 })
