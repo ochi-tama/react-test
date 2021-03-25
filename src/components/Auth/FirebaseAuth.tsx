@@ -69,9 +69,9 @@ function FirebaseAuth(): JSX.Element {
       signInSuccessWithAuthResult: (authResult) => {
         // ログイン成功時にauthcontextに保存する
         // https://firebase.google.com/docs/reference/android/com/google/firebase/auth/AuthResult
-        const user = authResult.user as firebase.User
-        dispatch(setUserId(user.uid))
-        dispatch(fetchUserInfoWithLogin())
+        // const user = authResult.user as firebase.User
+        // dispatch(setUserId(user.uid))
+        // dispatch(fetchUserInfoWithLogin())
         // User successfully signed in.
         // Return type determines whether we continue the redirect automatically
         // or whether we leave that to developer to handle.

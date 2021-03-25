@@ -1,11 +1,13 @@
+/* eslint-disable no-console */
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { db } from '../../common/firebase/firebaseClient'
+import { auth, db } from '../../common/firebase/firebaseClient'
 import { User } from '../../schema/user'
+import { UserData } from './../../schema/user'
 import { RootState } from './../store'
 
 type UserState = {
   loading: boolean
-  user: User | undefined
+  user: UserData | undefined
   uid: string | undefined
   errors: Record<string, string>
 }
@@ -18,14 +20,24 @@ const initialState: UserState = {
 }
 
 export const fetchUserInfoWithLogin = createAsyncThunk<
-  User,
+  UserData,
   void,
   { state: RootState }
 >('users/fetchByLogin', async (_, thunkApi) => {
   const uid = thunkApi.getState().auth.uid
   const doc = await db.collection('users').doc(uid).get()
   const data = doc.data() as User
-  return data
+  return {
+    ...data,
+    createdAt: data.createdAt.toDate().toLocaleDateString(),
+    updatedAt: data.updatedAt.toDate().toLocaleDateString(),
+    lastLoginDate: data.lastLoginDate.toDate().toLocaleDateString()
+  }
+})
+
+export const logout = createAsyncThunk('users/logout', async () => {
+  await auth.signOut()
+  return {}
 })
 
 const authSlice = createSlice({
@@ -63,9 +75,24 @@ const authSlice = createSlice({
         errors: errors
       }
     })
+    builder.addCase(logout.pending, (state) => {
+      return {
+        ...state,
+        loading: true
+      }
+    })
+    builder.addCase(logout.fulfilled, (state) => {
+      return {
+        ...state,
+        loading: false,
+        uid: undefined,
+        user: undefined,
+        errors: {}
+      }
+    })
   }
 })
 
 const { reducer, actions } = authSlice
-export const { setUserId, logout } = actions
+export const { setUserId } = actions
 export default reducer

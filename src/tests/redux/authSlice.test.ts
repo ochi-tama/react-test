@@ -15,9 +15,9 @@ describe('Auth Reducer のテスト', () => {
     expect(store.getState().auth.uid).toBe('aiueo')
   })
 
-  test('logoutでstateがリセットされる', () => {
+  test('logoutでstateがリセットされる', async () => {
     store.dispatch(setUserId('aiueo'))
-    store.dispatch(logout())
+    await store.dispatch(logout())
     const { loading, uid, user, errors } = store.getState().auth
     expect(loading).toBe(false)
     expect(uid).toBe(undefined)

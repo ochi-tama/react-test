@@ -5,10 +5,12 @@ import {
   TypedUseSelectorHook
 } from 'react-redux'
 import authReducer from './auth/authSlice'
+import documentInfoReducer from './documentInfo/documentInfoSlice'
 
 const store = configureStore({
   reducer: {
-    auth: authReducer
+    auth: authReducer,
+    documentInfo: documentInfoReducer
   }
 })
 

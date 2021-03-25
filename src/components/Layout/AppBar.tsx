@@ -15,8 +15,8 @@ import React from 'react'
 import { useHistory } from 'react-router-dom'
 import styled from 'styled-components'
 import { DRAWER_WIDTH } from '../../common/const'
-import { auth } from '../../common/firebase/firebaseClient'
-import { AuthContext } from '../../context/AuthContext'
+import { logout } from '../../redux/auth/authSlice'
+import { useDispatch, useSelector } from '../../redux/store'
 
 type Props = {
   authenticated: boolean
@@ -29,9 +29,11 @@ export default function Appbar({
   open,
   handleOpen
 }: Props): JSX.Element {
+  const authState = useSelector((state) => state.auth)
+  const dispatch = useDispatch()
+
   const history = useHistory()
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
-  const { setCurrentUser } = React.useContext(AuthContext)
   const [
     mobileMoreAnchorEl,
     setMobileMoreAnchorEl
@@ -45,10 +47,13 @@ export default function Appbar({
   }
 
   const handleLogout = async () => {
+    /*
     await auth.signOut()
     if (setCurrentUser) {
       setCurrentUser(null)
     }
+    */
+    dispatch(logout())
     window.location.href = '/'
   }
   const handleMobileMenuClose = () => {
