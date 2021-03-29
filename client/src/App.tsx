@@ -7,8 +7,8 @@ import Document from './pages/Document/Document'
 import Login from './pages/Login/Login'
 import Search from './pages/Search/Search'
 import Top from './pages/Top/Top'
-import { setUserId, fetchUserInfoWithLogin } from './redux/auth/authSlice'
-import { useSelector, useDispatch } from './redux/store'
+import { fetchUserInfoWithLogin, setUserId } from './redux/auth/authSlice'
+import { useDispatch, useSelector } from './redux/store'
 
 function App(): JSX.Element {
   const dispatch = useDispatch()
@@ -22,6 +22,7 @@ function App(): JSX.Element {
     })
   }, [])
   const currentUser = useSelector((state) => state.auth.user)
+
   return (
     <Switch>
       <Route exact path="/login">

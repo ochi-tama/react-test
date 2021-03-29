@@ -1,0 +1,5 @@
+{
+  "useWorkspaces": true,
+  "hpmClient":"yarn",
+  "version": "independent"
+}

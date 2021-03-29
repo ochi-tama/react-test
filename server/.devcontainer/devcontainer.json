@@ -1,15 +1,15 @@
+
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.154.0/containers/debian
 {
-  "name": "react-test-client",
-  "build": {
-    "dockerfile": "Dockerfile",
-    // Update 'VARIANT' to pick an Debian version: buster, stretch
-  },
-
+  "name": "server",
+  // docker-compose の service に合わせる
+  "service": "server",
+  "shutdownAction": "none",
+  "dockerComposeFile": ["../../docker-compose.yml"],
   // Set *default* container specific settings.json values on container create.
   "settings": {
-    "terminal.integrated.shell.linux": "/bin/ash"
+    "terminal.integrated.shell.linux": "/bin/bash"
   },
 
   // Add the IDs of extensions you want installed when the container is created.
@@ -24,9 +24,9 @@
     "toba.vsfire",
     "wix.vscode-import-cost"
   ],
+  "workspaceFolder": "/workspace/server",
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
-  "forwardPorts": [3000, 80]
 
   // Uncomment to use the Docker CLI from inside the container. See https://aka.ms/vscode-remote/samples/docker-from-docker.
   // "mounts": [ "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind" ],

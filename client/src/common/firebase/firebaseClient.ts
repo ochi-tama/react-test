@@ -12,9 +12,10 @@ if (!firebase.apps.length) {
 const db = firebase.firestore()
 const storage = firebase.storage()
 const auth = firebase.auth()
+
 if (
   location.hostname === 'localhost' &&
-  process.env.REACT_APP_EMULATOR == 'true'
+  process.env.REACT_APP_EMULATOR === 'true'
 ) {
   auth.useEmulator('http://localhost:9099')
   db.useEmulator('localhost', 8080)
