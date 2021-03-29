@@ -4,9 +4,6 @@
   "extends": [
     "plugin:@typescript-eslint/recommended",
     "plugin:jest/recommended",
-    "prettier",
-    "prettier/react",
-    "prettier/@typescript-eslint",
     "plugin:prettier/recommended"
     // Uncomment the following lines to enable eslint-config-prettier
     // Is not enabled right now to avoid issues with the Next.js repo

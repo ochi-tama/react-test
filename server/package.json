@@ -1,0 +1,39 @@
+{
+  "name": "server",
+  "version": "0.0.1",
+  "scripts": {
+    "lint": "eslint \"functions/src/**/*\"",
+    "build": "tsc",
+    "serve": "tsc-watch --onFirstSuccess 'firebase emulators:start --import=./functions/testData'",
+    "serve-for-test": "tsc-watch --onFirstSuccess 'firebase emulators:start'",
+    "shell": "tsc-watch --onFirstSuccess 'firebase functions:shell'",
+    "start": "yarn run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log",
+    "test": "jest"
+  },
+  "engines": {
+    "node": "14"
+  },
+  "main": "functions/lib/index.js",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "busboy": "^0.3.1",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "firebase": "^8.2.1",
+    "firebase-admin": "^9.2.0",
+    "firebase-functions": "^3.13.0",
+    "node-fetch": "^2.6.1"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^1.1.6",
+    "@types/busboy": "^0.2.3",
+    "@types/cors": "^2.8.9",
+    "@types/express": "^4.17.11",
+    "@types/node-fetch": "^2.5.8",
+    "firebase-functions-test": "^0.2.3"
+  },
+  "private": true
+}

@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import firebase, { db } from '../../common/firebase/firebaseClient'
-import { RootState } from './../store'
+import { RootState } from '../store'
 import { DocumentInfo } from '../../schema/documentInfo'
 
 interface TableRowData {

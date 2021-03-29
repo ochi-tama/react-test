@@ -2,8 +2,8 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { auth, db } from '../../common/firebase/firebaseClient'
 import { User } from '../../schema/user'
-import { UserData } from './../../schema/user'
-import { RootState } from './../store'
+import { UserData } from '../../schema/user'
+import { RootState } from '../store'
 
 type UserState = {
   loading: boolean
